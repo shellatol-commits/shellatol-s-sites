@@ -1,0 +1,120 @@
+<DOCTYPE html>
+  <html lang="pt-BR"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10130f">
+  <meta name="description" content="Fritador de Cérebros 3000: um cofre portátil de credenciais para levar no pendrive.">
+  <title>Fritador de Cérebros 3000 — Seu cofre. No seu bolso.</title>
+  <style>
+    :root{color-scheme:dark;--bg:#10130f;--panel:#191e18;--ink:#f3f1e8;--muted:#afb7a8;--lime:#c9f36a;--line:#35402e;--orange:#ff9e61}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:inherit} .wrap{width:min(1120px,calc(100% - 40px));margin:auto}
+    .nav{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff16}
+    .brand{display:flex;gap:11px;align-items:center;text-decoration:none;font-weight:750;letter-spacing:-.03em}.brand-mark{width:34px;height:34px;border:1px solid var(--lime);border-radius:10px;display:grid;place-items:center;color:var(--lime);font-size:19px}
+    .nav a.cta{padding:10px 16px;border:1px solid #ffffff36;border-radius:999px;text-decoration:none;font-size:14px}
+    .hero{padding:95px 0 82px;display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center}
+    .eyebrow{display:flex;gap:10px;align-items:center;color:var(--lime);font-size:12px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 16px var(--lime)}
+    h1{font-size:clamp(46px,7vw,82px);line-height:.99;letter-spacing:-.075em;margin:22px 0 24px;max-width:700px}
+    h1 em{font-style:normal;color:var(--lime)}
+    .lede{color:#c8cec1;font-size:19px;max-width:580px}
+    .actions{display:flex;gap:13px;flex-wrap:wrap;margin-top:32px}
+    .button{display:inline-flex;align-items:center;gap:9px;text-decoration:none;padding:13px 19px;border-radius:10px;font-weight:750}
+    .primary{background:var(--lime);color:#18200e}.secondary{border:1px solid #ffffff38}
+    .note{color:var(--muted);font-size:13px;margin-top:18px}
+    .visual{min-height:390px;position:relative;display:grid;place-items:center}
+    .glow{position:absolute;width:320px;height:320px;border-radius:50%;background:#c9f3261a;filter:blur(60px)}
+    .usb{z-index:1;width:170px;height:300px;border-radius:27px;background:linear-gradient(145deg,#353d31,#171b17 64%);border:1px solid #738261;box-shadow:inset 1px 1px 1px #ffffff25,18px 25px 70px #0009;transform:rotate(-13deg);position:relative}
+    .usb:before{content:"";position:absolute;top:-46px;left:53px;width:62px;height:55px;background:linear-gradient(90deg,#aaa995,#f1efdf,#8a897e);border:1px solid #cac9b9;border-radius:8px 8px 2px 2px}
+    .usb:after{content:"";position:absolute;top:-8px;left:70px;width:28px;height:9px;background:#292d27;border-radius:2px}
+    .usb-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--lime);font-size:12px;font-weight:800;letter-spacing:.08em;text-align:center}
+    .lock{width:49px;height:43px;border:2px solid var(--lime);border-radius:10px;position:relative}
+    .lock:before{content:"";position:absolute;width:22px;height:19px;border:2px solid var(--lime);border-bottom:0;border-radius:14px 14px 0 0;left:11px;top:-19px}
+    .tag{position:absolute;z-index:2;padding:9px 13px;background:#1a2019;border:1px solid var(--line);border-radius:9px;color:#dce5d2;font-size:12px;box-shadow:0 12px 30px #0005}
+    .tag.one{top:24%;left:0}.tag.two{right:-2%;bottom:25%}
+    .specs{border-top:1px solid #ffffff18;border-bottom:1px solid #ffffff18;display:grid;grid-template-columns:repeat(3,1fr);padding:24px 0}
+    .spec{padding:3px 24px;border-right:1px solid #ffffff18}.spec:first-child{padding-left:0}.spec:last-child{border:0}
+    .spec strong{display:block;color:var(--lime);font-size:14px}.spec span{font-size:13px;color:var(--muted)}
+    section{padding:85px 0}.section-head{max-width:650px;margin-bottom:34px}.kicker{color:var(--lime);font-size:12px;text-transform:uppercase;letter-spacing:.13em;font-weight:750}
+    h2{font-size:clamp(32px,4.5vw,52px);line-height:1.05;letter-spacing:-.055em;margin:12px 0}.section-head p{color:var(--muted);font-size:17px}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--panel);border:1px solid #ffffff15;border-radius:16px;padding:25px;min-height:205px}
+    .icon{font-size:23px;color:var(--lime)}.card h3{font-size:18px;margin:18px 0 8px}.card p{margin:0;color:var(--muted);font-size:14px}
+    .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;counter-reset:step}.step{counter-increment:step;border-top:1px solid var(--line);padding:20px 14px 0 0}.step:before{content:"0" counter(step);color:var(--lime);font-size:13px;font-weight:800}.step h3{font-size:16px;margin:12px 0 6px}.step p{font-size:14px;color:var(--muted);margin:0}
+    .recovery{display:grid;grid-template-columns:1fr .85fr;gap:45px;align-items:center;background:var(--panel);border:1px solid #ffffff15;border-radius:20px;padding:clamp(25px,5vw,52px)}
+    .recovery p{color:var(--muted)}.warning{border-left:3px solid var(--orange);padding:15px 18px;background:#ff9e6110;color:#f2d0b8;font-size:14px}
+    .path{background:#10140f;border:1px solid #ffffff16;padding:18px;border-radius:11px;color:var(--lime);font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}
+    .disclosure{font-size:12px;color:#9da596;margin-top:10px}
+    .final{padding:74px 0 90px;text-align:center}.final h2{max-width:650px;margin:12px auto}.final p{color:var(--muted);max-width:600px;margin:0 auto 25px}
+    footer{border-top:1px solid #ffffff18;padding:25px 0;color:#929a8c;font-size:12px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}footer a{color:#c9f36a}
+    @media(max-width:760px){.hero{grid-template-columns:1fr;gap:15px;padding:68px 0 55px}.visual{min-height:340px}.usb{transform:rotate(-13deg) scale(.88)}.tag.one{left:4%}.tag.two{right:3%}.specs{grid-template-columns:1fr;gap:15px}.spec,.spec:first-child{border:0;padding:0}.cards{grid-template-columns:1fr}.card{min-height:auto}.flow{grid-template-columns:1fr 1fr;row-gap:28px}.recovery{grid-template-columns:1fr;gap:20px}section{padding:62px 0}.nav{height:66px}.brand{font-size:14px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <header class="wrap nav">
+    <a class="brand" href="#" aria-label="Fritador de Cérebros 3000, início"><span class="brand-mark">F</span> FRITADOR DE CÉREBROS 3000</a>
+    <a class="cta" href="https://github.com/shellatol-commits/Fritador_de_Cerebros_3000">Ver no GitHub ↗</a>
+  </header>
+  <main>
+    <section class="wrap hero">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> Cofre portátil de credenciais</div>
+        <h1>Seu cofre.<br><em>No seu bolso.</em></h1>
+        <p class="lede">Leve suas credenciais em um pendrive e acesse-as por um aplicativo portátil. O Fritador de Cérebros 3000 foi pensado para computadores onde instalar programas nem sempre é uma opção.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/shellatol-commits/Fritador_de_Cerebros_3000/releases">⬇ Ver versão v1.0.0</a>
+          <a class="button secondary" href="https://github.com/shellatol-commits/Fritador_de_Cerebros_3000">Explorar o projeto ↗</a>
+        </div>
+        <p class="note">Aplicativo portátil · Interface de menu numérico · Release v1.0.0</p>
+      </div>
+      <div class="visual" aria-label="Ilustração de um pendrive com cadeado">
+        <div class="glow"></div><div class="tag one">USB · SEU COFRE</div>
+        <div class="usb"><div class="usb-label"><div class="lock"></div><span>FDC 3000<br>SECURE VAULT</span></div></div>
+        <div class="tag two">● ARMAZENAMENTO CRIPTOGRAFADO</div>
+      </div>
+    </section>
+    <div class="wrap specs">
+      <div class="spec"><strong>SEM INSTALAÇÃO</strong><span>Executável portátil, conforme o README</span></div>
+      <div class="spec"><strong>TRÊS OPÇÕES DE ARMAZENAMENTO</strong><span>USB principal, cópia oculta e recuperação local</span></div>
+      <div class="spec"><strong>v1.0.0</strong><span>Release disponível no GitHub</span></div>
+    </div>
+    <section class="wrap">
+      <div class="section-head"><div class="kicker">Feito para mobilidade</div><h2>O essencial, sem cerimônia.</h2><p>Um menu direto para guardar, encontrar e preencher credenciais a partir do seu próprio dispositivo.</p></div>
+      <div class="cards">
+        <article class="card"><div class="icon">⌁</div><h3>Leve e portátil</h3><p>O README descreve execução em espaço de usuário, sem instalação tradicional e sem gravação no Registro do Windows.</p></article>
+        <article class="card"><div class="icon">⌨</div><h3>Preenchimento rápido</h3><p>Use a opção de auto digitação para enviar as credenciais à janela ativa por meio de teclas simuladas.</p></article>
+        <article class="card"><div class="icon">⟲</div><h3>Recuperação descrita</h3><p>O projeto documenta uma cópia local que pode ser usada para reconstruir os dados no pendrive quando necessário.</p></article>
+        <article class="card"><div class="icon">＋</div><h3>Cadastre contas</h3><p>Registre o site, o identificador e a senha; o README diz que a cópia local é atualizada ao adicionar credenciais.</p></article>
+        <article class="card"><div class="icon">▤</div><h3>Consulte sua lista</h3><p>Veja as entradas guardadas no índice do cofre usando os controles numéricos da interface.</p></article>
+        <article class="card"><div class="icon">⌫</div><h3>Remova registros</h3><p>Apague um registro pelo menu. A documentação diz que a exclusão também alcança os demais nós de armazenamento.</p></article>
+      </div>
+    </section>
+    <section class="wrap">
+      <div class="section-head"><div class="kicker">Fluxo de uso</div><h2>Do pendrive ao acesso.</h2></div>
+      <div class="flow">
+        <div class="step"><h3>Obtenha o release</h3><p>Consulte a página de releases e as instruções da versão antes de executar.</p></div>
+        <div class="step"><h3>Prepare o dispositivo</h3><p>A nota v1.0.0 recomenda executar o programa na pasta de destino e selecionar o caminho atual.</p></div>
+        <div class="step"><h3>Desbloqueie o cofre</h3><p>Inicie o aplicativo e informe a senha mestra para acessar o menu.</p></div>
+        <div class="step"><h3>Guarde e use</h3><p>Cadastre, consulte ou preencha credenciais pelas opções numeradas.</p></div>
+      </div>
+    </section>
+    <section class="wrap">
+      <div class="recovery">
+        <div><div class="kicker">Sua cópia de segurança</div><h2>Uma rota de recuperação local.</h2><p>Além do arquivo principal no USB e de uma cópia oculta no próprio dispositivo, o README descreve um arquivo de recuperação no computador. Mantenha também uma cópia do executável e não perca a senha mestra.</p>
+          <div class="warning">Antes de confiar credenciais importantes ao cofre, avalie o projeto e valide o processo de recuperação para o seu próprio caso de uso.</div>
+        </div>
+        <div><div class="path">%LOCALAPPDATA%\LocalStorage\fritadordecerebros3000\backup.dat</div><p class="disclosure">Caminho documentado no README. O funcionamento e a segurança das cópias não foram auditados independentemente.</p></div>
+      </div>
+    </section>
+    <section class="wrap final">
+      <div class="kicker">Conheça o projeto</div><h2>Leve o acesso com você.</h2><p>Leia o README, confira a release v1.0.0 e decida se o fluxo do Fritador de Cérebros 3000 combina com seu ambiente.</p>
+      <div class="actions" style="justify-content:center">
+        <a class="button primary" href="https://github.com/shellatol-commits/Fritador_de_Cerebros_3000/releases">Ver releases ↗</a>
+        <a class="button secondary" href="https://github.com/shellatol-commits/Fritador_de_Cerebros_3000/blob/master/README.txt">Ler o README ↗</a>
+      </div>
+    </section>
+  </main>
+  <footer class="wrap"><span>Fritador de Cérebros 3000 · Projeto independente</span><span>Informações baseadas no <a href="https://github.com/shellatol-commits/Fritador_de_Cerebros_3000">README e na release do projeto</a>.</span></footer>
+
+
+</body></html>
