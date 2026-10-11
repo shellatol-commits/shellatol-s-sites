@@ -1,0 +1,85 @@
+<title>Data Uri generator</title>
+<script>
+  //FILE DATA URI
+  
+function dataUri() {
+    const target = document.getElementById("42");
+
+    if (!target) {
+        throw new Error('Textarea with ID "42" was not found.');
+    }
+
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "*/*";
+
+    input.onchange = () => {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const dataURI = reader.result;
+
+            target.value = dataURI;
+
+            target.dispatchEvent(
+                new Event("input", { bubbles: true })
+            );
+            target.dispatchEvent(
+                new Event("change", { bubbles: true })
+            );
+        };
+
+        reader.onerror = () => {
+            console.error("Failed to read the selected file.");
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    input.click();
+}
+
+  //TEXT DATA URI
+  function dataUriText() {
+  const source = document.getElementById("67");
+    const target = document.getElementById("42");
+
+    if (!source || !target) {
+        throw new Error('Textarea with ID "67" or "42" was not found.');
+    }
+
+    // Convert all Unicode characters to UTF-8 bytes
+    const bytes = new TextEncoder().encode(source.value);
+
+    // Convert UTF-8 bytes to a binary string
+    let binary = "";
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
+    }
+
+    // Encode as Base64 data URI
+    const dataURI =
+        "data:text/plain;charset=utf-8;base64," + btoa(binary);
+
+    // Put the complete result into textarea 42
+    target.value = dataURI;
+
+    // Notify any listeners that the value changed
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+    target.dispatchEvent(new Event("change", { bubbles: true }));
+
+    return dataURI;
+    console.log(dataURI);
+  }
+  </script>
+<h1>Data URI Generator</h1>
+<p>Just click the button and watch the magic happen in your browser.</p>
+<button type="submit" onclick="dataUri()">Generate DataURI from File</button>
+You can also encode text here:
+<textarea id="67" placeholder="Insert your text here"></textarea>
+<button type="submit" onclick="dataUriText()"></button>
+<p>result:</p>
+<textarea id="42" placeholder="The DataURI comes out here"></textarea>
