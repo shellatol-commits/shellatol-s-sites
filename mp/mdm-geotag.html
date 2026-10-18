@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geotag Shortcut Detector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Forces it to hide the safari browser UI when launched from MDM Profile -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <style>
+        body { font-family: -apple-system, sans-serif; text-align: center; padding: 50px; background: #f4f4f9; }
+        .status { font-size: 24px; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>Geotag Detector Active</h2>
+    <div id="distance-display">Calculating distance...</div>
+    <div id="status-display" class="status">🔄 Scanning...</div>
+
+    <script>
+        // 1. SETUP TARGET COORDINATES
+        const TARGET_LAT = 41.40338; 
+        const TARGET_LON = -0.17403;
+        const TRIGGER_RADIUS_METERS = 50; // Trigger distance
+
+        // Haversine calculation to see if coordinates are similar/near
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; 
+            const phi1 = lat1 * Math.PI / 180;
+            const phi2 = lat2 * Math.PI / 180;
+            const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+            const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+                      Math.cos(phi1) * Math.cos(phi2) *
+                      Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition((position) => {
+                const currentLat = position.coords.latitude;
+                const currentLon = position.coords.longitude;
+                const distance = getDistance(TARGET_LAT, TARGET_LON, currentLat, currentLon);
+                
+                document.getElementById('distance-display').innerText = `Distance: ${distance.toFixed(1)} meters`;
+
+                if (distance <= TRIGGER_RADIUS_METERS) {
+                    document.getElementById('status-display').innerText = "🎯 MATCH DETECTED";
+                    document.getElementById('status-display').style.color = "green";
+                    
+                    // TRIGGER ACTION: Redirects to open a native iOS app/shortcut via URL Scheme
+                    window.location.href = "shortcuts://run-shortcut?name=MyTargetShortcut";
+                } else {
+                    document.getElementById('status-display').innerText = "❌ Outside Range";
+                    document.getElementById('status-display').style.color = "red";
+                }
+            }, (err) => console.error(err), { enableHighAccuracy: true });
+        }
+    </script>
+</body>
+</html>
