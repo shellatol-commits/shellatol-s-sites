@@ -3,36 +3,41 @@
 <head>
     <title>Geotag Shortcut Detector</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Hides Safari UI layout elements when launched from an MDM Web Clip Profile -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; background: #f4f4f9; color: #333; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background: #f4f4f9; color: #333; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h3 { margin-top: 0; }
-        input, select, button { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-        button { background: #007aff; color: white; border: none; font-weight: bold; cursor: pointer; }
-        button.delete { background: #ff3b30; padding: 6px 10px; width: auto; float: right; }
-        .tag-item { background: #f9f9f9; padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 4px solid #007aff; overflow: hidden; }
+        h3 { margin-top: 0; color: #111; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+        button { background: #007aff; color: white; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:active { background: #0056b3; }
+        button.delete { background: #ff3b30; padding: 6px 12px; width: auto; float: right; margin: 0; }
+        button.delete:active { background: #c92a2a; }
+        .tag-item { background: #f9f9f9; padding: 14px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #007aff; overflow: hidden; }
         .tag-item.active-trigger { border-left-color: #34c759; background: #e8f5e9; }
-        .status-box { font-weight: bold; text-align: center; font-size: 18px; padding: 10px; border-radius: 6px; background: #eaeaea; }
+        .status-box { font-weight: bold; text-align: center; font-size: 18px; padding: 12px; border-radius: 8px; background: #eaeaea; transition: all 0.3s; }
+        .coords-text { font-family: monospace; font-size: 15px; color: #555; background: #eee; padding: 4px 8px; border-radius: 4px; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h3>Live GPS Tracking</h3>
-        <div id="live-coords">Waiting for GPS signal...</div>
-        <div id="global-status" class="status-box" style="margin-top: 10px;">🔄 Initializing...</div>
+        <div>Current Location: <span id="live-coords" class="coords-text">Waiting for GPS signal...</span></div>
+        <div id="global-status" class="status-box" style="margin-top: 15px;">🔄 Initializing...</div>
     </div>
 
     <div class="card">
         <h3>Create New Geotag Target</h3>
         <input type="text" id="tag-name" placeholder="Target Name (e.g., Office, Home)">
-        <input type="number" step="any" id="tag-lat" placeholder="Latitude (or use auto-fill below)">
+        <input type="number" step="any" id="tag-lat" placeholder="Latitude">
         <input type="number" step="any" id="tag-lon" placeholder="Longitude">
         <input type="number" id="tag-radius" placeholder="Trigger Radius (meters)" value="50">
-        <input type="text" id="tag-shortcut" placeholder="iOS Shortcut Name to trigger" value="GEOTAG Installer">
+        <!-- Permanently updated to default to your target shortcut name: GeoShortcut -->
+        <input type="text" id="tag-shortcut" placeholder="iOS Shortcut Name to trigger" value="GeoShortcut">
         
         <button type="button" onclick="fillCurrentLocation()" style="background:#5856d6; margin-bottom: 5px;">📍 Use Current Location Coords</button>
         <button type="button" onclick="saveGeotag()">➕ Save Geotag Target</button>
@@ -45,10 +50,9 @@
 
     <script>
         let currentPosition = null;
-        // Fetch existing tags from device storage, or default to empty array
         let geotags = JSON.parse(localStorage.getItem('mdm_geotags')) || [];
+        let triggeredTags = {}; 
 
-        // Haversine calculation formula
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; 
             const phi1 = lat1 * Math.PI / 180;
@@ -61,7 +65,6 @@
             return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
         }
 
-        // Auto-fill input fields with current live location coordinates
         function fillCurrentLocation() {
             if (currentPosition) {
                 document.getElementById('tag-lat').value = currentPosition.coords.latitude;
@@ -71,7 +74,6 @@
             }
         }
 
-        // CREATE: Add new target to memory
         function saveGeotag() {
             const name = document.getElementById('tag-name').value;
             const lat = parseFloat(document.getElementById('tag-lat').value);
@@ -88,7 +90,6 @@
             geotags.push(newTag);
             localStorage.setItem('mdm_geotags', JSON.stringify(geotags));
             
-            // Reset input forms
             document.getElementById('tag-name').value = '';
             document.getElementById('tag-lat').value = '';
             document.getElementById('tag-lon').value = '';
@@ -97,15 +98,14 @@
             checkAllGeotags();
         }
 
-        // DELETE: Remove target from memory
         function deleteGeotag(id) {
             geotags = geotags.filter(tag => tag.id !== id);
+            delete triggeredTags[id]; 
             localStorage.setItem('mdm_geotags', JSON.stringify(geotags));
             renderTagsList();
             checkAllGeotags();
         }
 
-        // Render targets visual display
         function renderTagsList() {
             const container = document.getElementById('tags-list');
             if (geotags.length === 0) {
@@ -119,12 +119,11 @@
                     <strong>${tag.name}</strong><br>
                     <small>Coords: ${tag.lat.toFixed(5)}, ${tag.lon.toFixed(5)}</small><br>
                     <small>Radius: ${tag.radius}m | Run: ${tag.shortcut}</small>
-                    <div id="distance-to-${tag.id}" style="font-size:12px; color:#666; margin-top:5px;">Calculating...</div>
+                    <div id="distance-to-${tag.id}" style="font-size:13px; color:#666; margin-top:5px; font-weight:500;">Calculating...</div>
                 </div>
             `).join('');
         }
 
-        // Evaluate proximity against all active geotags
         function checkAllGeotags() {
             if (!currentPosition || geotags.length === 0) return;
 
@@ -145,10 +144,16 @@
                     anyTriggered = true;
                     if (cardEl) cardEl.classList.add('active-trigger');
                     
-                    // Trigger execution redirect to Apple Shortcuts
-                    window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(tag.shortcut)}`;
+                    if (!triggeredTags[tag.id]) {
+                        triggeredTags[tag.id] = true; 
+                        window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(tag.shortcut)}`;
+                    }
                 } else {
                     if (cardEl) cardEl.classList.remove('active-trigger');
+                    
+                    if (triggeredTags[tag.id]) {
+                        triggeredTags[tag.id] = false;
+                    }
                 }
             });
 
@@ -164,20 +169,27 @@
             }
         }
 
-        // Start High Accuracy Tracking Engine
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition((position) => {
                 currentPosition = position;
                 document.getElementById('live-coords').innerText = 
-                    `Lat: ${position.coords.latitude.toFixed(5)}, Lon: ${position.coords.longitude.toFixed(5)}`;
+                    `${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`;
                 
                 checkAllGeotags();
             }, (err) => {
-                document.getElementById('live-coords').innerText = "GPS Error: Access Denied";
-            }, { enableHighAccuracy: true });
+                document.getElementById('live-coords').innerText = "GPS Error: Check Location Permissions";
+                document.getElementById('global-status').innerText = "❌ GPS Error";
+                document.getElementById('global-status').style.background = "#ff3b30";
+                document.getElementById('global-status').style.color = "white";
+            }, { 
+                enableHighAccuracy: true, 
+                maximumAge: 0,
+                timeout: 10000 
+            });
+        } else {
+            document.getElementById('live-coords').innerText = "Unsupported Platform Device";
         }
 
-        // Initial paint execution
         renderTagsList();
     </script>
 </body>
