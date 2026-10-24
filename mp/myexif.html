@@ -38,7 +38,7 @@
         }
         
         h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 12px 0;
             font-size: 17px;
             font-weight: 600;
             color: #3a3a3c;
@@ -54,6 +54,7 @@
             font-weight: 600;
             width: 100%;
             cursor: pointer;
+            margin-top: 8px;
             -webkit-tap-highlight-color: transparent;
         }
         
@@ -67,7 +68,7 @@
             padding: 12px;
             border: 1px solid #c7c7cc;
             border-radius: 8px;
-            margin: 12px 0;
+            margin: 12px 0 4px 0;
             font-size: 16px;
             background: #fafafa;
             font-family: inherit;
@@ -76,8 +77,9 @@
         }
         
         input[type="file"] {
-            margin: 8px 0;
+            margin: 4px 0 8px 0;
             font-size: 14px;
+            width: 100%;
         }
         
         #out {
@@ -98,71 +100,97 @@
 
     <h2>EXIF Utility</h2>
 
-    <!-- BLOCK 1: WIPE METADATA & APPEND DATA -->
+    <!-- CARD 1: SCRAPE ONLY (NO TEXT FIELD) -->
     <div class="card">
         <h3>Scrape secrets</h3>
-        <input type="file" id="img" accept="image/jpeg">
-        <textarea id="msg" placeholder="Type the secret text to add:"></textarea>
-        <button onclick="add()">Add secret</button>
+        <input type="file" id="scrapeImg" accept="image/jpeg">
+        <button onclick="scrapeOnly()">Scrape metadata</button>
     </div>
 
-    <!-- BLOCK 2: TARGET EXTRACTION AND READOUT -->
+    <!-- CARD 2: ADD SECRET (CONTAINS THE TEXTAREA FIELD) -->
+    <div class="card">
+        <h3>Add secret</h3>
+        <input type="file" id="addImg" accept="image/jpeg">
+        <textarea id="msg" placeholder="Type the secret text to add:"></textarea>
+        <button onclick="addSecret()">Add secret</button>
+    </div>
+
+    <!-- CARD 3: READ ONLY -->
     <div class="card">
         <h3>Read secrets</h3>
-        <input type="file" id="src" accept="image/jpeg" onchange="read()">
+        <input type="file" id="src" accept="image/jpeg" onchange="readSecrets()">
         <div id="out"></div>
     </div>
 
     <script>
         const tag = "###secret###";
 
-        async function add() {
-            const e = document.getElementById("img");
-            const t = document.getElementById("msg").value;
+        // Helper function to find EOI marker and wipe EXIF/metadata
+        async function getCleanBytes(fileElement) {
+            if (!fileElement.files || fileElement.files.length === 0) return null;
+            const buffer = await fileElement.files[0].arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            let eoiOffset = bytes.length;
             
-            if (!e.files || !t) return alert("Missing data");
-
-            const r = await e.files[0].arrayBuffer();
-            const n = new Uint8Array(r);
-            let a = n.length;
-            
-            // Core processing cycle: search for binary closing parameters
-            for (let e = n.length - 2; e >= 0; e--) {
-                if (n[e] === 255 && n[e+1] === 217) {
-                    a = e + 2;
+            for (let i = bytes.length - 2; i >= 0; i--) {
+                if (bytes[i] === 255 && bytes[i+1] === 217) {
+                    eoiOffset = i + 2;
                     break;
                 }
             }
-            
-            const c = n.subarray(0, a);
-            const i = (new TextEncoder()).encode(tag + t);
-            const o = new Uint8Array(c.length + i.length);
-            
-            o.set(c);
-            o.set(i, c.length);
-
-            const d = document.createElement("a");
-            d.href = URL.createObjectURL(new Blob([o], { type: "image/jpeg" }));
-            d.download = "clear_image.jpg";
-            d.click();
+            return bytes.subarray(0, eoiOffset);
         }
 
-        async function read() {
-            const e = document.getElementById("src");
-            const t = document.getElementById("out");
+        // Action 1: Just cleans metadata and downloads the file
+        async function scrapeOnly() {
+            const cleanBytes = await getCleanBytes(document.getElementById("scrapeImg"));
+            if (!cleanBytes) return alert("Please select an image first");
+
+            const blob = new Blob([cleanBytes], { type: "image/jpeg" });
+            triggerDownload(blob, "scraped_image.jpg");
+        }
+
+        // Action 2: Appends the custom text payload past the closing image bytes
+        async function addSecret() {
+            const cleanBytes = await getCleanBytes(document.getElementById("addImg"));
+            const textValue = document.getElementById("msg").value;
             
-            if (!e.files || e.files.length === 0) return;
+            if (!cleanBytes || !textValue) return alert("Missing image file or secret text");
 
-            const r = await e.files[0].arrayBuffer();
-            const n = (new TextDecoder()).decode(new Uint8Array(r));
+            const textBytes = (new TextEncoder()).encode(tag + textValue);
+            const combinedContainer = new Uint8Array(cleanBytes.length + textBytes.length);
+            
+            combinedContainer.set(cleanBytes);
+            combinedContainer.set(textBytes, cleanBytes.length);
 
-            if (n.includes(tag)) {
-                t.innerText = "Extracted Plain Text:\n" + n.split(tag).pop();
-                t.style.display = "block";
+            const blob = new Blob([combinedContainer], { type: "image/jpeg" });
+            triggerDownload(blob, "clear_image.jpg");
+        }
+
+        // Action 3: Parses files to extract hidden trailing notes
+        async function readSecrets() {
+            const fileInput = document.getElementById("src");
+            const outputDiv = document.getElementById("out");
+            
+            if (!fileInput.files || fileInput.files.length === 0) return;
+
+            const buffer = await fileInput.files[0].arrayBuffer();
+            const textContent = (new TextDecoder()).decode(new Uint8Array(buffer));
+
+            if (textContent.includes(tag)) {
+                outputDiv.innerText = "Extracted Plain Text:\n" + textContent.split(tag).pop();
+                outputDiv.style.display = "block";
             } else {
-                t.innerText = "No hidden plain text tracking payloads found.";
-                t.style.display = "block";
+                outputDiv.innerText = "No hidden plain text tracking payloads found.";
+                outputDiv.style.display = "block";
             }
+        }
+
+        function triggerDownload(blob, filename) {
+            const anchor = document.createElement("a");
+            anchor.href = URL.createObjectURL(blob);
+            anchor.download = filename;
+            anchor.click();
         }
     </script>
 </body>
