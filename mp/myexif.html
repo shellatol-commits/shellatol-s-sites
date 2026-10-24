@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- EXACT PHRASE CASED APPLICATION CONFIGURATION TAGS -->
+    <title>EXIF Utility</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EXIF Utility">
+
+    <style>
+        :root { --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --accent: #007aff; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: env(safe-area-inset-top) 20px 20px 20px; background: var(--bg); color: var(--text); margin: 0; }
+        h2 { font-weight: 700; margin-top: 20px; text-align: center; }
+        .card { background: var(--card); padding: 20px; border-radius: 14px; margin-top: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+        h3 { margin-top: 0; font-size: 17px; font-weight: 600; color: #3a3a3c; }
+        button { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        button:active { opacity: 0.8; }
+        input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #c7c7cc; border-radius: 8px; margin: 12px 0; font-size: 16px; background: #fafafa; }
+        input[type="file"] { margin: 8px 0; font-size: 14px; }
+        #resultDisplay { font-weight: 600; color: #34c759; margin-top: 12px; word-break: break-all; background: #f6ffed; padding: 10px; border-radius: 6px; border: 1px solid #b7eb8f; display: none; }
+    </style>
+</head>
+<body>
+
+    <h2>EXIF Utility</h2>
+
+    <!-- FEATURE ONE: SCRAPE & INJECT -->
+    <div class="card">
+        <h3>Scrape secrets</h3>
+        <input type="file" id="imageInput" accept="image/jpeg">
+        <input type="text" id="secretInput" placeholder="Type the secret text to add:">
+        <button onclick="injectSecret()">Scrape & Save Image</button>
+    </div>
+
+    <!-- FEATURE TWO: READ EXTRACTOR -->
+    <div class="card">
+        <h3>Read secrets</h3>
+        <input type="file" id="readInput" accept="image/jpeg" onchange="readSecret()">
+        <div id="resultDisplay"></div>
+    </div>
+
+    <script>
+        const SEPARATOR = "###secret###";
+
+        async function injectSecret() {
+            const fileInput = document.getElementById('imageInput');
+            const secretText = document.getElementById('secretInput').value;
+            if (!fileInput.files || !secretText) return alert("Select an image and enter a text payload.");
+
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+            const rawBytes = new Uint8Array(arrayBuffer);
+            
+            let eoiOffset = rawBytes.length;
+            for (let i = rawBytes.length - 2; i >= 0; i--) {
+                if (rawBytes[i] === 0xFF && rawBytes[i+1] === 0xD9) {
+                    eoiOffset = i + 2; 
+                    break;
+                }
+            }
+            const cleanImageBytes = rawBytes.subarray(0, eoiOffset);
+
+            const encoder = new TextEncoder();
+            const textBytes = encoder.encode(SEPARATOR + secretText);
+            
+            const totalContainer = new Uint8Array(cleanImageBytes.length + textBytes.length);
+            totalContainer.set(cleanImageBytes);
+            totalContainer.set(textBytes, cleanImageBytes.length);
+            
+            const blob = new Blob([totalContainer], { type: "image/jpeg" });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = "clear_image.jpg";
+            anchor.click();
+        }
+
+        async function readSecret() {
+            const fileInput = document.getElementById('readInput');
+            const display = document.getElementById('resultDisplay');
+            if (!fileInput.files) return;
+
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+            const rawBytes = new Uint8Array(arrayBuffer);
+            
+            const decoder = new TextDecoder('utf-8');
+            const outputString = decoder.decode(rawBytes);
+            
+            if (outputString.includes(SEPARATOR)) {
+                const parts = outputString.split(SEPARATOR);
+                display.innerText = "Extracted Plain Text:\n" + parts[parts.length - 1];
+                display.style.display = "block";
+            } else {
+                display.innerText = "No hidden plain text tracking payloads found.";
+                display.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>
